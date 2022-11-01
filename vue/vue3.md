@@ -688,6 +688,25 @@ plusOne.value = 1
 2. 在访问数据的时候，`ref`需要使用`.value`，而`reactive`不需要
 3. ef通过Object.defineProperty()的get和set实现数据代理。reactive使用Proxy实现数据代理，并且通过Reflect操作源对象内部的数据。
 
+### readonly
+
+接受一个对象 (不论是响应式还是普通的) 或是一个ref，返回一个原值的只读代理。
+
+只读代理是深层的：对任何嵌套属性的访问都将是只读的。它的 ref 解包行为与 `reactive()` 相同，但解包得到的值是只读的。
+
+```vue
+const original = reactive({ count: 0 })
+const copy = readonly(original)
+watchEffect(() => {
+  // 用来做响应性追踪
+  console.log(copy.count)
+})
+// 更改源属性会触发其依赖的侦听器
+original.count++
+// 更改该只读副本将会失败，并会得到一个警告
+copy.count++ // warning!
+```
+
 ### watchEffect
 
 立即运行一个函数，同时响应式地追踪其依赖，并在依赖更改时重新执行。
@@ -699,11 +718,88 @@ function watchEffect(
 ): StopHandle
 ```
 
+```typescript
+const count = ref(0)
+watchEffect(() => console.log(count.value))
+// -> 输出 0
+count.value++
+// -> 输出 1
+```
+
 ### watch
 
+侦听一个或多个响应式数据源，并在数据源变化时调用所给的回调函数。
 
+```typescript
+// 侦听单个来源
+function watch<T>(
+  source: WatchSource<T>,
+  callback: WatchCallback<T>,
+  options?: WatchOptions
+): StopHandle
 
+// 侦听多个来源
+function watch<T>(
+  sources: WatchSource<T>[],
+  callback: WatchCallback<T[]>,
+  options?: WatchOptions
+): StopHandle
+```
 
+```javascript
+const count = ref(0)
+watch(count, (count, prevCount) => {
+  /* ... */
+})
+watch([fooRef, barRef], ([foo, bar], [prevFoo, prevBar]) => {
+  /* ... */
+})
+```
+
+### isRef unRef
+
+```typescript
+function isRef<T>(r: Ref<T> | unknown): r is Ref<T>
+// 如果参数是 ref，则返回内部值，否则返回参数本身
+// val = isRef(val) ? val.value : val 计算的一个语法糖
+function unref<T>(ref: T | Ref<T>): T
+```
+
+### toRef toRefs
+
+将一个响应式对象转换为一个普通对象，这个普通对象的每个属性都是指向源对象相应属性的 ref。每个单独的 ref 都是使用toRef()创建的。
+
+当从组合式函数中返回响应式对象时，`toRefs` 相当有用。使用它，消费者组件可以解构/展开返回的对象而不会失去响应性
+
+```vue
+function useFeatureX() {
+  const state = reactive({
+    foo: 1,
+    bar: 2
+  })
+  // ...基于状态的操作逻辑
+  // 在返回时都转为 ref
+  return toRefs(state)
+}
+// 可以解构而不会失去响应性
+const { foo, bar } = useFeatureX()
+```
+
+### shallow
+
+shallowRef shallowReactive shallowReadonly 浅层作用形式
+
+```vue
+const state = shallowRef({ count: 1 })
+// 不会触发更改
+state.value.count = 2
+// 会触发更改
+state.value = { count: 2 }
+```
+
+### triggerRef
+
+强制触发依赖于一个浅层 ref 的副作用，这通常在对浅引用的内部值进行深度变更后使用
 
 
 
