@@ -960,11 +960,35 @@ export default {
 
 ### Transition
 
-为单个元素或组件提供动画过渡效果。
+为单个元素或组件提供动画过渡效果。进入或离开可以由以下的条件之一触发：
 
+- 由 `v-if` 所触发的切换
+- 由 `v-show` 所触发的切换
+- 由特殊元素 `<component>` 切换的动态组件
 
+**基于 CSS 的过渡效果**
 
+![image-20221104174900227](https://images-sally.oss-cn-beijing.aliyuncs.com/img/transition-基于css过滤效果.png)
 
+```vue
+<button @click="show = !show">Toggle</button>
+<Transition>
+  <p v-if="show">hello</p>
+</Transition>
+```
+
+```css
+/* 下面我们会解释这些 class 是做什么的 */
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+```
 
 
 
