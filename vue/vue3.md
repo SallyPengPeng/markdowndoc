@@ -966,7 +966,60 @@ export default {
 - 由 `v-show` 所触发的切换
 - 由特殊元素 `<component>` 切换的动态组件
 
-**基于 CSS 的过渡效果**
+```typescript
+interface TransitionProps {
+  /**
+   * 用于自动生成过渡 CSS class 名。
+   * 例如 `name: 'fade'` 将自动扩展为 `.fade-enter`、
+   * `.fade-enter-active` 等。
+   */
+  name?: string
+  /**
+   * 是否应用 CSS 过渡 class。
+   * 默认：true
+   */
+  css?: boolean
+  /**
+   * 指定要等待的过渡事件类型
+   * 来确定过渡结束的时间。
+   * 默认情况下会自动检测
+   * 持续时间较长的类型。
+   */
+  type?: 'transition' | 'animation'
+  /**
+   * 显式指定过渡的持续时间。
+   * 默认情况下是等待过渡效果的根元素的第一个 `transitionend`
+   * 或`animationend`事件。
+   */
+  duration?: number | { enter: number; leave: number }
+  /**
+   * 控制离开/进入过渡的时序。
+   * 默认情况下是同时的。
+   */
+  mode?: 'in-out' | 'out-in' | 'default'
+  /**
+   * 是否对初始渲染使用过渡。
+   * 默认：false
+   */
+  appear?: boolean
+
+  /**
+   * 用于自定义过渡 class 的 prop。
+   * 在模板中使用短横线命名，例如：enter-from-class="xxx"
+   */
+  enterFromClass?: string
+  enterActiveClass?: string
+  enterToClass?: string
+  appearFromClass?: string
+  appearActiveClass?: string
+  appearToClass?: string
+  leaveFromClass?: string
+  leaveActiveClass?: string
+  leaveToClass?: string
+}
+```
+
+#### **基于 CSS 的过渡效果**
 
 ![image-20221104174900227](https://images-sally.oss-cn-beijing.aliyuncs.com/img/transition-基于css过滤效果.png)
 
@@ -978,7 +1031,6 @@ export default {
 ```
 
 ```css
-/* 下面我们会解释这些 class 是做什么的 */
 .v-enter-active,
 .v-leave-active {
   transition: opacity 0.5s ease;
@@ -990,9 +1042,70 @@ export default {
 }
 ```
 
+有名字的`Transition`，可以传递`prop`，起作用的class以`name`命名：
 
+```vue
+<Transition name="fade">
+  ...
+</Transition>
+```
 
+```css
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+```
 
+传递以下 props 指定自定义的过渡 class：
+
+- `enter-from-class`
+- `enter-active-class`
+- `enter-to-class`
+- `leave-from-class`
+- `leave-active-class`
+- `leave-to-class`
+
+```vue
+<Transition
+  name="custom-classes"
+  enter-active-class="animate__animated animate__tada"
+  leave-active-class="animate__animated animate__bounceOutRight"
+>
+  <p v-if="show">hello</p>
+</Transition>
+```
+
+#### js钩子
+
+```javascript
+<Transition
+  @before-enter="onBeforeEnter"
+  @enter="onEnter"
+  @after-enter="onAfterEnter"
+  @enter-cancelled="onEnterCancelled"
+  @before-leave="onBeforeLeave"
+  @leave="onLeave"
+  @after-leave="onAfterLeave"
+  @leave-cancelled="onLeaveCancelled"
+>
+  <!-- ... -->
+</Transition>
+```
+
+#### 其他prop
+
+1、`:css="false"`：使用仅由 JavaScript 执行的动画时，添加。显式地向 Vue 表明可以跳过对 CSS 过渡的自动探测
+
+2、初次渲染时应用一个过渡效果，你可以添加 `appear` prop
+
+```vue
+<Transition appear></Transition>
+```
+
+3、mode="out-in"(in-out)先执行离开动画，然后在其完成之后再执行元素的进入动画
+
+### TransitionGroup
 
 
 
