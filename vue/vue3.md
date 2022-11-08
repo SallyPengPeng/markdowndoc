@@ -6,6 +6,7 @@ defineProps：规范传递数据的格式
 // 运行声明和类型声明二选一，否则报错
 // 运行声明
 let props = defineProps({ value: Number})
+
 // ts类型声明，只能使用withDefaults提供默认值
 export interface Props {
   msg?: string
@@ -123,9 +124,9 @@ export default {
 
 <!-- 根据一个变量的值动态传入 -->
 <BlogPost :likes="post.likes" />
-
-
 ```
+
+透传attr：透传 attribute”指的是传递给一个组件，却没有被该组件声明为props 或emits 的 attribute 或者 `v-on` 事件监听器。比如 `class`、`style` 和 `id` `v-on` 。
 
 ## 触发与监听事件
 
@@ -144,7 +145,6 @@ export default {
 
 <!-- 父组件监听 -->
 <MyComponent @some-event="callback" />
-
 ```
 
 声明触发事件
@@ -164,62 +164,7 @@ export default {
 }
 ```
 
-
-
-透传attr：透传 attribute”指的是传递给一个组件，却没有被该组件声明为props 或emits 的 attribute 或者 `v-on` 事件监听器。比如 `class`、`style` 和 `id` `v-on` 。
-
-
-
-动态组件：`<component>` 元素和特殊的 `is` attribute 实现
-
-```vue
-<!-- currentTab 改变时组件也改变 -->
-<component :is="currentTab"></component>
-
-```
-
-默认情况下，一个组件实例在被替换掉后会被销毁。用 `<KeepAlive>` 内置组件将这些动态组件包装，能在被“切走”的时候保留它们的状态
-
-```vue
-<!-- 非活跃的组件将会被缓存！ -->
-<KeepAlive>
-  <component :is="activeComponent" />
-</KeepAlive>
-```
-
-
-
-`<Teleport>` 将一个组件内部的一部分模板“传送”到该组件的 DOM 结构外层的位置去
-
-```vue
-<Teleport to="body">
-  <div v-if="open" class="modal">
-    <p>Hello from the modal!</p>
-    <button @click="open = false">Close</button>
-  </div>
-</Teleport>
-```
-
-
-
-自定义指令，遵循 `vNameOfDirective` 命名规范
-
-```vue
-<script setup>
-const vMyDirective = {
-  beforeMount: (el) => {
-    // 在元素上做些操作
-  }
-}
-</script>
-<template>
-  <h1 v-my-directive>This is a Heading</h1>
-</template>
-```
-
-
-
-script setup和普通的 script
+## script setup和普通的 script
 
 普通的 `<script>` 在有这些需要的情况下或许会被使用到：
 
@@ -243,8 +188,6 @@ export default {
 // 在 setup() 作用域中执行 (对每个实例皆如此)
 </script>
 ```
-
-
 
 ## 全局API
 
@@ -275,6 +218,15 @@ increment() {
   // DOM 此时已经更新
   console.log(document.getElementById('counter').textContent) // 1
 }
+```
+
+### defineComponent
+
+在定义 Vue 组件时提供类型推导的辅助函数
+
+```typescript
+const Foo = defineComponent(/* ... */)
+type FooInstance = InstanceType<typeof Foo>
 ```
 
 ### defineAsyncComponent
@@ -314,8 +266,6 @@ const AsyncComp = defineAsyncComponent({
   timeout: 3000
 })
 ```
-
-
 
 ## 组合式API
 
@@ -374,6 +324,14 @@ setup(props, context) {
 
 如果将一个对象赋值给 ref，那么这个对象将通过`reactive()` 转为具有深层次响应式的对象。这也意味着如果对象中包含了嵌套的 ref，它们将被深层地解包。
 
+```typescript
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+
+const year: Ref<string | number> = ref('2020')
+const year = ref<string | number>('2020')
+```
+
 ```vue
 let todos = ref(true);
 ```
@@ -381,6 +339,12 @@ let todos = ref(true);
 ### computed
 
 自动根据状态变量计算新值，返回一个ref对象
+
+```typescript
+const double = computed<number>(() => {
+  // 若返回值不是 number 类型则会报错
+})
+```
 
 只读的计算属性 ref：
 
@@ -417,6 +381,15 @@ plusOne.value = 1
 1. `reactive`和`ref`都是用来定义响应式数据的，而`reactive`更推荐用来定义对象，`ref`更推荐定义基础数据类型，但是`ref`也可以定义数组和对象
 2. 在访问数据的时候，`ref`需要使用`.value`，而`reactive`不需要
 3. ef通过Object.defineProperty()的get和set实现数据代理。reactive使用Proxy实现数据代理，并且通过Reflect操作源对象内部的数据。
+
+```typescript
+interface Book {
+  title: string
+  year?: number
+}
+
+const book: Book = reactive({ title: 'Vue 3 指引' })
+```
 
 ### readonly
 
@@ -578,6 +551,8 @@ export function useDebouncedRef(value, delay = 200) {
 
 ### 生命周期
 
+![组件生命周期图示](https://images-sally.oss-cn-beijing.aliyuncs.com/img/vue3-lifecycle.png)
+
 **onMounted()**
 
 ```typescript
@@ -615,6 +590,9 @@ function onUpdated(callback: () => void): void
 **onActivated()**：若组件实例是 `keepAlive`缓存树的一部分，当组件被插入到 DOM 中时调用
 
 **onDeactivated()**：若组件实例是 `keepAlive`缓存树的一部分，当组件从 DOM 中被移除时调用
+
+- `activated` 在组件挂载时也会调用，并且 `deactivated` 在组件卸载时也会调用。
+- 这两个钩子不仅适用于 `<KeepAlive>` 缓存的根组件，也适用于缓存树中的后代组件。
 
 ### 依赖注入
 
@@ -845,6 +823,23 @@ export default {
 </div>
 ```
 
+### 自定义指令
+
+遵循 `vNameOfDirective` 命名规范
+
+```vue
+<script setup>
+const vMyDirective = {
+  beforeMount: (el) => {
+    // 在元素上做些操作
+  }
+}
+</script>
+<template>
+  <h1 v-my-directive>This is a Heading</h1>
+</template>
+```
+
 
 
 
@@ -958,6 +953,18 @@ export default {
 </template>
 ```
 
+### component
+
+动态组件：`<component>` 元素和特殊的 `is` attribute 实现
+
+- 当 `is` 是字符串，它既可以是 HTML 标签名也可以是组件的注册名。
+- 或者，`is` 也可以直接绑定到组件的定义。
+
+```vue
+<component :is="href ? 'a' : 'span'"></component>
+<component :is="Math.random() > 0.5 ? Foo : Bar" />
+```
+
 ### Transition
 
 为单个元素或组件提供动画过渡效果。进入或离开可以由以下的条件之一触发：
@@ -1019,7 +1026,7 @@ interface TransitionProps {
 }
 ```
 
-#### **基于 CSS 的过渡效果**
+**基于 CSS 的过渡效果**
 
 ![image-20221104174900227](https://images-sally.oss-cn-beijing.aliyuncs.com/img/transition-基于css过滤效果.png)
 
@@ -1076,7 +1083,7 @@ interface TransitionProps {
 </Transition>
 ```
 
-#### js钩子
+**js钩子**
 
 ```javascript
 <Transition
@@ -1093,7 +1100,7 @@ interface TransitionProps {
 </Transition>
 ```
 
-#### 其他prop
+**其他prop**
 
 1、`:css="false"`：使用仅由 JavaScript 执行的动画时，添加。显式地向 Vue 表明可以跳过对 CSS 过渡的自动探测
 
@@ -1107,15 +1114,126 @@ interface TransitionProps {
 
 ### TransitionGroup
 
+用于对 `v-for` 列表中的元素或组件的插入、移除和顺序改变添加动画效果。
 
+`<TransitionGroup>` 支持和 `<Transition>` 基本相同的 props、CSS 过渡 class 和 JavaScript 钩子监听器，但有以下几点区别：
 
+- 默认情况下，它不会渲染一个容器元素。但你可以通过传入 `tag` prop 来指定一个元素作为容器元素来渲染。
+- 过渡模式不可用，因为不再是在互斥的元素之间进行切换。
+- 列表中的每个元素都**必须**有一个独一无二的 `key` attribute。
+- CSS 过渡 class 会被应用在列表内的元素上，**而不是**容器元素上
 
+```vue
+<TransitionGroup name="list" tag="ul">
+  <li v-for="item in items" :key="item">
+    {{ item }}
+  </li>
+</TransitionGroup>
+```
 
+```css
+.list-move, /* 对移动中的元素应用的过渡 */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
 
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
 
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+  position: absolute;
+}
+```
 
+### KeepAlive
 
+在多个组件间动态切换时缓存被移除的组件实例。默认情况下，一个组件实例在被替换掉后会被销毁。用 `<KeepAlive>` 内置组件将这些动态组件包装，能在被“切走”的时候保留它们的状态
 
+```vue
+<!-- 非活跃的组件将会被缓存！ -->
+<KeepAlive>
+  <component :is="activeComponent" />
+</KeepAlive>
+```
+
+**props**
+
+ `include` 和 `exclude` ：`<KeepAlive>` 默认会缓存内部所有组件实例，可以通过 `include` 和 `exclude` prop 来定制该行为。它会根据组件的name 选项进行匹配，所以组件如果想要条件性地被 `KeepAlive` 缓存，就必须显式声明一个 `name` 选项
+
+max：限制可被缓存的最大组件实例数，使用LRU缓存淘汰算法
+
+```vue
+<!-- 以英文逗号分隔的字符串 -->
+<KeepAlive include="a,b">
+  <component :is="view" />
+</KeepAlive>
+
+<!-- 正则表达式 (需使用 `v-bind`) -->
+<KeepAlive :include="/a|b/">
+  <component :is="view" />
+</KeepAlive>
+
+<!-- 数组 (需使用 `v-bind`) -->
+<KeepAlive :include="['a', 'b']">
+  <component :is="view" />
+</KeepAlive>
+
+<KeepAlive :max="10">
+  <component :is="activeComponent" />
+</KeepAlive>
+```
+
+### Teleport
+
+将一个组件内部的一部分模板“传送”到该组件的 DOM 结构外层的位置去。
+
+**props**
+
+`to`： 的值可以是一个 CSS 选择器字符串，也可以是一个 DOM 元素对象。
+
+```vue
+<button @click="open = true">Open Modal</button>
+
+<Teleport to="body">
+  <div v-if="open" class="modal">
+    <p>Hello from the modal!</p>
+    <button @click="open = false">Close</button>
+  </div>
+</Teleport>
+
+```
+
+disabled：视情况禁用 `<Teleport>`
+
+```vue
+<Teleport :disabled="isMobile">
+  ...
+</Teleport>
+```
+
+### Suspense
+
+用来在组件树中协调对异步依赖的处理，可以在组件树上层等待下层的多个嵌套异步依赖项解析完成，并可以在等待时渲染一个加载状态。
+
+## 渲染函数
+
+```javascript
+import { h } from 'vue'
+
+const vnode = h(
+  'div', // type
+  { id: 'foo', class: 'bar' }, // props
+  [
+    /* children */
+  ]
+)
+```
 
 
 

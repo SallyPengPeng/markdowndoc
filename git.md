@@ -1,3 +1,15 @@
+*/\* 不转换换行符 \*/*
+
+git config --global core.autocrlf false
+
+*/\* 忽略文件权限修改 \*/*
+
+git config --global core.filemode false
+
+*/\* 允许提交包含混合换行符的文件 \*/*
+
+git config --global core.safecrlf true
+
 ## branch
 
 ```shell
