@@ -886,8 +886,8 @@ const vMyDirective = {
 ```vue
 <BaseLayout>
   <template v-slot:header>
-    <!-- header 插槽的内容放这里 -->
 		<!--简写为：<template #header>-->
+    <!-- header 插槽的内容放这里 -->
 		<h1>Here might be a page title</h1>
   </template>
   
