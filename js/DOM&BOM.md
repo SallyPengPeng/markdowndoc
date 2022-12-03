@@ -101,6 +101,13 @@ element.getAttribute(属性)
 element.setAttribute(属性)
 ```
 
+```javascript
+// 覆盖原来的样式
+var dom=element.setAttribute("class","test1");
+// 追加样式不覆盖原来的样式
+element.classList.add("test1","test2","test3");
+```
+
 #### 查
 
 - 根据ID获取，返回element对象：getElementById('id名')
@@ -243,7 +250,7 @@ this: 返回的是绑定事件的对象（元素）
 
 https://segmentfault.com/a/1190000002405897
 
-1. event
+#### event
 
 - pageX/Y
 
@@ -275,18 +282,20 @@ https://segmentfault.com/a/1190000002405897
 
   兼容性：IE6/7/8不支持，opera不支持，IE9/10和Chrome、Safari均支持
 
-2. event.target：触发事件的对象 (某个DOM元素) 的引用
+#### event.target
 
-   offsetHeight/offsetWidth：元素自身可见高度 + padding + border + 滚动条(17)，不包含margin，不包括溢出不可见部分的高度。
+触发事件的对象 (某个DOM元素) 的引用
 
-   clientHeight/clientWidth：元素自身可见高度 + padding，不包含border与margin，不包括溢出不可见部分的高度。
+- offsetHeight/offsetWidth：元素自身可见高度 + padding + border + 滚动条(17)，不包含margin，不包括溢出不可见部分的高度。
 
-   scrollHeight/scrollWidth：只读属性是一个元素内容高度的度量，包括由于溢出导致的视图中不可见内容，包含width和padding，不包含border与margin
+- clientHeight/clientWidth：元素自身可见高度 + padding，不包含border与margin，不包括溢出不可见部分的高度。
 
-   scrollTop/scrollLeft:获取元素滚动后的距离文档顶部的距离，也就是滚动条滚动的距离。
+- scrollHeight/scrollWidth：只读属性是一个元素内容高度的度量，包括由于溢出导致的视图中不可见内容，包含width和padding，不包含border与margin
 
-   clientTop:获取元素边框的厚度，也就是border的宽度。
-    有个公式：target.scrollTop + target.offsetHeight === target.scrollHeight用于判断滚动条是否滚动到底。
+- scrollTop/scrollLeft:获取元素滚动后的距离文档顶部的距离，也就是滚动条滚动的距离。
+
+- clientTop:获取元素边框的厚度，也就是border的宽度。
+   有个公式：target.scrollTop + target.offsetHeight === target.scrollHeight用于判断滚动条是否滚动到底。
 
 ### 不支持冒泡的事件
 
@@ -726,9 +735,53 @@ const target = document.querySelector('.target');
 observer.observe(target);
 ```
 
+### ResizeObserver
+
+https://juejin.cn/post/7129046057719169055#heading-0
+
+监视 Element 内容盒或边框盒或者 SVGElement 边界尺寸的变化
+
+```typescript
+new ResizeObserver((entries, observer) => void)
+```
 
 
 
+```javascript
+// 1. 构造函数，创建并返回一个 ResizeObserver 对象
+const resizeObserver = new ResizeObserver(entries => {
+  console.log('监听到了尺寸变化了...', entries)
+})
+
+// 2. 开始观察指定的 Element 或 SVGElement 的尺寸变化
+resizeObserver.observe(document.getElementById('box'))
+
+// 3. 结束观察指定的 Element 或 SVGElement
+resizeObserver.unobserve(document.getElementById('box'))
+
+// 4. 取消和结束目标对象上所有对 Element或 SVGElement 观察
+resizeObserver.disconnect()
+```
+
+示例:
+
+```javascript
+let loginPage: HTMLElement
+let resizeObserver: ResizeObserver
+onMounted(() => {
+    loginPage = document.querySelector('.login-vue') as HTMLElement
+    resizeObserver = new ResizeObserver(entries => {      
+        if (entries[0].contentRect.width < 700) {
+            loginPage!.style.backgroundSize = '0% 0%'
+        } else {
+            loginPage!.style.backgroundSize = '80% 100%'
+        }
+    })
+    resizeObserver.observe(loginPage)
+})
+
+onUnmounted(() => resizeObserver.unobserve(loginPage))
+```
 
 
 

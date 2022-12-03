@@ -851,6 +851,13 @@ tsc xxx.ts -w
 tsc --init # 初始化生成tsconfig.json文件
 ```
 
+### 仅含类型导入导出
+
+```typescript
+import type { SomeThing } from "./some-module.js";
+export type { SomeThing };
+```
+
 ## react + ts
 
 ### reactRef
