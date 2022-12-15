@@ -303,7 +303,9 @@ https://segmentfault.com/a/1190000002405897
 
 ### element
 
-Element.getBoundingClientRect()：返回元素的大小（取决于box-sizing类型）及其相对于视口的位置。
+#### getBoundingClientRect
+
+返回元素的大小（取决于box-sizing类型）及其相对于视口的位置。
 
 ![获取元素位置](https://images-sally.oss-cn-beijing.aliyuncs.com/images/2022-01-05-获取元素位置-a0645655355a69a1ec6b7fa16381f143-abb.png)
 
@@ -317,6 +319,10 @@ rectObject.bottom：元素下边到视窗上边的距离;
 rectObject.left：元素左边到视窗左边的距离;
 rectObject.width：是元素自身的宽
 rectObject.height是元素自身的高
+
+#### getComputedStyle
+
+返回一个对象，该对象在应用活动样式表并解析这些值可能包含的任何基本计算后报告元素的所有CSS属性的值。 私有的CSS属性值可以通过对象提供的API或通过简单地使用CSS属性名称进行索引来访问。
 
 ## HTMLElement.dataset
 
@@ -639,9 +645,51 @@ let windowObjectReference = window.open(strUrl, strWindowName, [strWindowFeature
 // 打开的新窗口对象的引用。如果调用失败，返回值是 null。如果父子窗口满足“同源策略”，可通过这个引用访问新窗口的属性或方法。
 ```
 
-Window.getComputedStyle() 
+## 移动端
 
-返回一个对象，该对象在应用活动样式表并解析这些值可能包含的任何基本计算后报告元素的所有CSS属性的值。 私有的CSS属性值可以通过对象提供的API或通过简单地使用CSS属性名称进行索引来访问。
+### touch事件
+
+https://juejin.cn/post/6844903897266389000
+
+事件类型：
+
+- touchstart：触摸开始的时候触发
+- touchmove : 手指在屏幕上滑动的时候触发
+- touchend: 触摸结束的时候触发
+- touchcancel：触摸时由于某些原因被中断时触发
+
+事件属性：当触发事件的时候会生成一个event对象，以下是对象的属性列表
+
+- **touches**：屏幕上所有触摸点的信息
+- **targetTouches**：目标区域上所有触摸点的信息
+- **changedTouches**：当前事件触摸点的信息
+
+区别：
+
+- 第一根手指触摸屏幕，三个事件获取到的信息是相同的。
+- 第二根手指触摸屏幕，touches会获取两个触摸点的信息，如果触摸点是在同一个目标区域上的targetTouches也是获取到两个触摸点信息，而chengedTouched只保存第二个信息点。
+- 若同时两根手指触摸屏幕，changedTouches会保存两个触摸点信息。
+- 第一个触摸点和最后一个触摸点离开的时候，只有changedTouches才会保存离开的触摸点信息。
+
+属性参数：
+
+```
+// 获取event.changedTouches 输出
+{
+    clientX: 603.6799926757812 // 返回触摸点相对于浏览器视口左边缘的X坐标，不包括任何滚动偏移。
+    clientY: 932.9600219726562 // 返回触摸点相对于浏览器视口上边缘的Y坐标，不包括任何滚动偏移。
+    force: 1 // 压力大小，是从 0.0(无压力)到 1.0(最大压力)的浮点数
+    identifier: 0 // 一次触摸动作的唯一标识符
+    pageX: 603.6799926757812 // 返回触摸点相对于文档左边缘的X坐标。与clientX此不同，此值包括水平滚动偏移
+    pageY: 932.9600219726562 // 返回触摸点相对于文档顶部的Y坐标。与clientY,此值不同，包括垂直滚动偏移
+    radiusX: 30.053333282470703 // 返回椭圆的X半径，该半径最接近地限定与屏幕的接触区域。该值的大小与像素相同screenX。
+    radiusY: 30.053333282470703 //返回椭圆的Y半径，该半径最接近地限定与屏幕的接触区域。该值的大小与像素相同screenY。
+    rotationAngle: 0 // 它是这样一个角度值：由radiusX 和 radiusY 描述的正方向的椭圆，需要通过顺时针旋转这个角度值，才能最精确地覆盖住用户和触摸平面的接触面
+    screenX: 447 // 返回触摸点相对于屏幕左边缘的X坐标。
+    screenY: 527 // 返回触摸点相对于屏幕上边缘的Y坐标。
+    target: body // 此次触摸事件的目标element
+}
+```
 
 ## 总结
 
@@ -735,7 +783,36 @@ const target = document.querySelector('.target');
 observer.observe(target);
 ```
 
-### ResizeObserver
+### 响应式设计
+
+https://www.51cto.com/article/717951.html
+
+响应式设计指的是根据屏幕视口尺寸的不同，对 Web 页面的布局、外观进行调整，以便更加有效地进行信息的展示
+
+#### media query CSS
+
+#### window.matchMedia - JS
+
+```javascript
+const m = matchMedia('(max-width: 600px)')
+m.addEventListener('change',(event)=>{console.log('macth onChange', event)})
+```
+
+#### window.resize - JS 
+
+resize 事件只有当 viewport 的大小发生变化时会被触发，元素大小的变化不会触发 resize 事件；并且也只有注册在 window 对象上的回调会在 resize 事件发生时被调用，其他元素上的回调不会被调用
+
+| 方案                 | 相同问题                                                     | 特殊问题                                                     |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Media query-CSS      | 只能监听viewport变化，不能监听某个 **「组件/元素」** 大小变化 | 循环引用问题                                                 |
+| window.resize-JS     | 同上                                                         | 需要在 viewport 大小变化时手动获取元素的大小，可能导致性能问题 |
+| window-matchMedia-JS | 同上                                                         | 同上                                                         |
+
+以上三种浏览器原生方案，都存在着只能监听 viewport 大小变化，而不能监听 「组件/元素」 大小变化的问题。此外，CSS 的媒体查询存在着循环引用的问题，window.onresize 和 window.matchMedia 则都需要在 viewport 大小变化时手动获取元素的大小，一旦操作过于频繁则可能导致浏览器多次 reflow。
+
+ResizeObserver 就是为了解决以上问题而出现的，可以将其理解为 window.onresize 的「组件/元素级别」 的替代方案。使用 ResizeObserver 可以监听到元素大小的变化，无需手动调用 getBoundingClientRect 来获取元素的尺寸大小，同时也解决了无限回调和循环依赖的问题。
+
+#### ResizeObserver
 
 https://juejin.cn/post/7129046057719169055#heading-0
 
@@ -744,8 +821,6 @@ https://juejin.cn/post/7129046057719169055#heading-0
 ```typescript
 new ResizeObserver((entries, observer) => void)
 ```
-
-
 
 ```javascript
 // 1. 构造函数，创建并返回一个 ResizeObserver 对象

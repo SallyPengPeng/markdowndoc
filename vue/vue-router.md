@@ -25,8 +25,6 @@
 <router-view class="view right-sidebar" name="RightSidebar"></router-view>
 ```
 
-### route
-
 ### v-slot
 
 主要使用 `<transition>` 和 `<keep-alive>` 组件来包裹路由组件。
@@ -105,17 +103,17 @@
 - `isActive`：如果需要应用 `active class`，则为 `true`。允许应用一个任意的 class。
 - `isExactActive`：如果需要应用 `exact active class`，则为 `true`。允许应用一个任意的 class。
 
-
-
 ## createRouter
 
 ```typescript
 function createRouter(options: RouterOptions): Router
 interface RouterOptions {
   history: RouterHistory;
-  routes: RouteRecordRaw[]
   linkActiveClass?: string
   linkExactActiveClass?: string
+  // 应该添加到路由的初始路由列表，介绍见下方 route 篇章
+  routes: RouteRecordRaw[]
+  // 用于解析查询的自定义实现
   parseQuery?: (searchQuery: string) => Record<string, (string | null)[] | string | null>
   /** 在页面之间导航时控制滚动的函数。可以返回一个 Promise 来延迟滚动 */
   scrollBehavior?: RouterScrollBehavior
@@ -129,7 +127,37 @@ const router = VueRouter.createRouter({
 })
 ```
 
-比说，使用 `qs` 包来解析查询，你可以同时提供 `parseQuery` 和 `stringifyQuery`：
+### history
+
+```typescript
+// 创建一个 HTML5 历史
+export declare function createWebHistory(base?: string): RouterHistory
+
+createWebHistory() // 没有 base，应用托管在域名 `https://example.com` 的根目录下。
+createWebHistory('/folder/') // 给出的网址为 `https://example.com/folder/            
+```
+
+```javascript
+// 创建一个 哈希 历史
+export declare function createWebHashHistory(base?: string): RouterHistory 
+
+/ at https://example.com/folder
+createWebHashHistory() // 给出的网址为 `https://example.com/folder#`
+createWebHashHistory('/folder/') // 给出的网址为 `https://example.com/folder/#`
+// 如果在 base 中提供了 `#`，则它不会被 `createWebHashHistory` 添加
+createWebHashHistory('/folder/#/app/') // 给出的网址为 `https://example.com/folder/#/app/`
+```
+
+```typescript
+// 创建一个基于内存的历史记录。这个历史记录的主要目的是处理 SSR
+export declare function createMemoryHistory(base?: string): RouterHistory
+```
+
+
+
+### parse stringify
+
+比说，使用 `qs` 包来解析查询，可以同时提供 `parseQuery` 和 `stringifyQuery`：
 
 ```
 import qs from 'qs'
@@ -138,6 +166,43 @@ createRouter({
   parseQuery: qs.parse,
   stringifyQuery: qs.stringify,
 })
+```
+
+### scrollBehavior
+
+```typescript
+function scrollBehavior(to, from, savedPosition) {
+  	// `to` 和 `from` 都是路由地址
+  	// `savedPosition` 可以为空, 只有当是一个 popstate 导航时才可用（由浏览器的后退/前进按钮触发）
+  
+  	// 始终滚动到顶部
+    return { top: 0 }
+  
+  	// 始终在元素 #main 上方滚动 10px
+    return {
+      // el: document.getElementById('main'),
+      el: '#main',
+      top: -10,
+    }
+  
+  	// 不发生滚动
+  	return false
+  	return {}
+  
+  	// 在按下 后退/前进 按钮时，像浏览器的原生表现
+  	return savedPosition
+  
+  	// 浏览器支持滚动行为 让它变得更流畅
+  	return {
+        el: to.hash,
+        behavior: 'smooth',
+    }
+  
+  	// 模拟 “滚动到锚点” 的行为
+  	return {
+        el: to.hash,
+   	}
+}
 ```
 
 ## route
@@ -299,32 +364,106 @@ router.go(100)
 
 ## 导航守卫
 
+### 完整的导航解析流程
+
+1. 导航被触发。
+2. 在失活的组件里调用 `beforeRouteLeave` 守卫。
+3. 调用全局的 `beforeEach` 守卫。
+4. 在重用的组件里调用 `beforeRouteUpdate` 守卫。
+5. 在路由配置里调用 `beforeEnter`。
+6. 解析异步路由组件。
+7. 在被激活的组件里调用 `beforeRouteEnter`。
+8. 调用全局的 `beforeResolve` 守卫。
+9. 导航被确认。
+10. 调用全局的 `afterEach` 钩子。
+11. 触发 DOM 更新。
+12. 调用 `beforeRouteEnter` 守卫中传给 `next` 的回调函数，创建好的组件实例会作为回调函数的参数传入。
+
+### 类型
+
 ```typescript
-interface NavigationGuardWithThis<T> {
-    (this: T, to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): NavigationGuardReturn | Promise<NavigationGuardReturn>;
+type NavigationGuardReturn = void | Error | RouteLocationRaw | boolean | NavigationGuardNextCallback;
+
+interface NavigationGuard {
+    (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): NavigationGuardReturn | Promise<NavigationGuardReturn>;
+}
+
+interface NavigationHookAfter {
+    (to: RouteLocationNormalized, from: RouteLocationNormalized, failure?: NavigationFailure | void): any;
 }
 ```
 
-### 全局前置守卫
-
-当一个导航触发时，全局前置守卫按照创建顺序调用。守卫是异步解析执行，此时导航在所有守卫 resolve 完之前一直处于等待中
-
-添加一个导航守卫，在任何导航前执行。返回一个删除已注册守卫的函数。
+- Arguments：
+  - to - 要导航到的路由地址
+  - from - 从哪里来的路由地址
+  - `Function` next (可选) - 回调以验证导航
+- 可能的返回值 (和 `next`的参数) 有：
+  - `undefined | void | true`: 验证导航
+  - `false`: 取消导航
+  - [`RouteLocationRaw`](https://router.vuejs.org/zh/api/#routelocationraw): 重定向到一个不同的位置
+  - `(vm: ComponentPublicInstance) => any` **仅适用于 `beforeRouteEnter`**：导航完成后执行的回调。接收路由组件实例为参数
 
 ```typescript
-router.beforeEach(async (to, from) => {})
+// 守卫类型 beforeEach beforeResolve beforeEnter
+beforeResolve(guard: NavigationGuard): () => void
+
+// 钩子类型
+afterEach(guard: NavigationHookAfter): () => void
 ```
 
-回调：
+### 组件内的守卫
 
-- to：即将要进入的目标
-- from：当前导航正要离开的路由
+在路由组件内直接定义路由导航守卫(传递给路由配置的)
 
-- 返回：
-  - false: 取消当前的导航
-  - 一个路由地址: 通过一个路由地址跳转到一个不同的地址
+- `beforeRouteEnter`
+- `beforeRouteUpdate`
+- `beforeRouteLeave`
 
-### 全局解析守卫
+### beforeEnter
+
+路由独享的守卫，`beforeEnter` 守卫 **只在进入路由时触发**，不会在 `params`、`query` 或 `hash` 改变时触发。例如，从 `/users/2` 进入到 `/users/3` 或者从 `/users/2#info` 进入到 `/users/2#projects`。它们只有在 **从一个不同的** 路由导航时，才会被触发
+
+### beforeEach
+
+全局前置守卫：当一个导航触发时，全局前置守卫按照创建顺序调用。异步解析执行，此时导航在所有守卫 resolve 之前一直处于等待。
+
+### beforeResolve
+
+全局解析守卫，每次导航时都会触发。
+
+用处：获取数据或执行任何其他操作（如果用户无法进入页面时你希望避免执行的操作）的理想位置。
+
+### afterEach
+
+全局后置钩子，然而和守卫不同的是，这些钩子不会接受 `next` 函数也不会改变导航本身。对于分析、更改页面标题、声明页面等辅助功能以及许多其他事情都很有用
+
+## 其他
+
+### NavigationFailureType
+
+```typescript
+export declare enum NavigationFailureType
+```
+
+| 成员       | 值   | 描述                                                         |
+| ---------- | ---- | ------------------------------------------------------------ |
+| aborted    | 4    | 终止导航是指由于导航守卫返回 `false` 或调用 `next(false)` 而失败的导航。 |
+| cancelled  | 8    | 取消导航是指由于最近的导航完成启动（不一定是完成）而失败的导航。 |
+| duplicated | 16   | 重复导航是指在启动时已经在同一位置失败的导航。               |
+
+### START_LOCATION
+
+路由所在的初始路由地址。可用于导航守卫中，以区分初始导航。
+
+```javascript
+import { START_LOCATION } from 'vue-router'
+
+router.beforeEach((to, from) => {
+  if (from === START_LOCATION) {
+    // 初始导航
+  }
+})
+```
 
 
 
