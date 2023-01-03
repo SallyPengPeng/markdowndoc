@@ -1,6 +1,5 @@
 ## router-viewer
 
-<<<<<<< HEAD
 ```html
 <div id="app">
   <router-view></router-view>
@@ -28,25 +27,19 @@
 ```html
 <div class="user">
   <h2>User</h2>
->>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
   <router-view></router-view>
 </div>
 ```
 
-<<<<<<< HEAD
 **命名视图**
 =======
 ### 命名视图name
->>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
-
 ```html
 <router-view class="view left-sidebar" name="LeftSidebar"></router-view>
 <router-view class="view main-content"></router-view>
 <router-view class="view right-sidebar" name="RightSidebar"></router-view>
-```
-
-<<<<<<< HEAD
 router定义：
+```
 
 ```javascript
 const router = createRouter({
@@ -175,8 +168,6 @@ const router = VueRouter.createRouter({
 })
 ```
 
-<<<<<<< HEAD
-=======
 ### history
 
 ```typescript
@@ -202,8 +193,6 @@ createWebHashHistory('/folder/#/app/') // 给出的网址为 `https://example.co
 // 创建一个基于内存的历史记录。这个历史记录的主要目的是处理 SSR
 export declare function createMemoryHistory(base?: string): RouterHistory
 ```
-
-
 
 ### parse stringify
 
@@ -255,7 +244,6 @@ function scrollBehavior(to, from, savedPosition) {
 }
 ```
 
->>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
 ## route
 
 ```javascript
@@ -300,9 +288,7 @@ const routes = [
 ]
 ```
 
-<<<<<<< HEAD
-## 导航
-=======
+导航
 路由组件传参：当 `props` 设置为 `true` 时，`route.params` 将被设置为组件的 props。
 
 ```javascript
@@ -313,8 +299,6 @@ const User = {
 }
 const routes = [{ path: '/user/:id', component: User, props: true }]
 ```
-
-
 
 ## 重定向
 
@@ -372,8 +356,6 @@ const routes = [
 ```
 
 ## 切换路由
->>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
-
 **push**
 
 1. 如果提供了 `path`，`params` 会被忽略
@@ -417,7 +399,6 @@ router.go(-100)
 router.go(100)
 ```
 
-<<<<<<< HEAD
 ## 重定向
 
 ```javascript
@@ -440,7 +421,6 @@ const routes = [
 
 ```
 
-=======
 ## 导航守卫
 
 ### 完整的导航解析流程
@@ -545,8 +525,6 @@ const routes = [
   },
 ]
 ```
-
-
 
 ## 其他
 
