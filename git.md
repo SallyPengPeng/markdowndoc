@@ -68,8 +68,51 @@ new-feature$ git rebase --continue
 
 ## stash
 
+<<<<<<< HEAD
 ## git操作历史
 
+=======
+```shell
+git stash # 暂存所有未提交的修改（包括暂存的和非暂存的）
+git stash save "test-cmd-stash"
+
+git stash pop [stash@{1}] # 恢复之前缓存的工作目录, 并将缓存中删除
+
+git stsh apply # 将缓存堆栈中的stash应用到工作目录中，但并不删除stash拷贝
+git stash list # 查看暂存区
+git stash drop stash@{1} # 移除暂存区某一个stash
+
+git stash show [stash@{$num}] # 显示暂存做了哪些改动
+git stash clear # 删除所有暂存
+```
+
+## git操作历史
+
+```shell
+git reflog
+```
+
+```
+e0ddf4f (HEAD -> feature/button-dynamic-func-phl, origin/feature/button-dynamic-func-phl) HEAD@{0}: reset: moving to e0ddf4f
+3aebe74 HEAD@{1}: commit: 12
+e0ddf4f (HEAD -> feature/button-dynamic-func-phl, origin/feature/button-dynamic-func-phl) HEAD@{2}: commit: feat: 按钮组件，'动态函数'属性改为textarea 并支持执行用户自定义的方法
+2cfa32a (origin/develop, origin/HEAD, develop) HEAD@{3}: checkout: moving from develop to feature/button-dynamic-func-phl
+2cfa32a (origin/develop, origin/HEAD, develop) HEAD@{4}: pull: Fast-forward
+```
+
+## alias
+
+```shell
+co = checkout
+sw = switch
+br = branch
+recommit = commit --amend
+commend = commit --amend --no-edit
+clearbranch = remote prune origin
+plg = log -10 --graph --pretty=format:'%C(yellow)%h%Creset -%Cred%d%Creset %s %Cgreen| %cr %C(bold blue)| %an%Creset' --abbrev-commit --date=relative
+```
+
+>>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
 ## git提交规范
 
 http://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html

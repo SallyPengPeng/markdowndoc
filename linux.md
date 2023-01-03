@@ -8,6 +8,14 @@ cd `dirname $0`，进入当前Shell程序的目录
 
 $? 最后运行的命令的结束代码（返回值）
 
+## cd
+
+```shell
+cd ~ # 跳到自己的 home 目录
+cd - # 切换到上次所在目录
+cd ..
+```
+
 ## mv
 
 用来为文件或目录改名、或将文件或目录移入其它位置
@@ -100,6 +108,49 @@ $ mv /usr/runoob/*  .
 # 在工作目录下的 runoob2 目录中，建立一个名为 test 的子目录。
 # 若 runoob2 目录原本不存在，则建立一个。（注：本例若不加 -p 参数，且原本 runoob2 目录不存在，则产生错误。）
 mkdir -p runoob2/test
+```
+
+## scp
+
+secure copy, 是 linux 系统下基于 ssh 登陆进行安全的远程文件拷贝命令
+
+```shell
+scp [可选参数] file_source file_target 
+```
+
+```shell
+# 从本地复制到远程，需要在本地的终端执行
+# 第1,2个指定了用户名，命令执行后需要再输入密码，第1个仅指定了远程的目录，文件名字不变，第2个指定了文件名；
+# 第3,4个没有指定用户名，命令执行后需要输入用户名和密码，第3个仅指定了远程的目录，文件名字不变，第4个指定了文件名
+scp local_file remote_username@remote_ip:remote_folder 
+scp local_file remote_username@remote_ip:remote_file 
+scp local_file remote_ip:remote_folder 
+scp local_file remote_ip:remote_file 
+```
+
+```shell
+# 从远程复制到本地
+scp root@www.runoob.com:/home/root/others/music /home/space/music/1.mp3 
+scp -r www.runoob.com:/home/root/others/ /home/space/music/
+```
+
+## rm
+
+```shell
+rm [options] name...
+```
+
+- -i 删除前逐一询问确认。
+- -f 即使原档案属性设为唯读，亦直接删除，无需逐一确认。
+- -r 将目录及以下之档案亦逐一删除。
+
+```shell
+# 删除 一般文件
+rm  test.txt 
+# 删除 目录
+rm  -r  homework  
+# 删除当前目录下的所有文件及目录，并且是直接删除，无需逐一确认命令行为
+rm  -rf  要删除的文件名或目录
 ```
 
 

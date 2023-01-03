@@ -963,6 +963,10 @@ box-shadow: h-shadow v-shadow blur spread color inset || none; // 默认为null
 
 注意：默认是外阴影，但不可以写outset，否则导致 阴影无效；阴影不占用空间，不影响其他盒子；
 
+```css
+box-shadow: 2px 0 2px 2px #ccc, -2px 0 2px 2px #ccc; // 左右两边有阴影
+```
+
 ## text-shadow
 
 文字阴影，CSS3添加属性

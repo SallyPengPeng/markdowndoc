@@ -470,7 +470,11 @@ function unref<T>(ref: T | Ref<T>): T
 
 ### toRef toRefs
 
+<<<<<<< HEAD
 将一个响应式对象转换为一个普通对象，这个普通对象的每个属性都是指向源对象相应属性的 ref。每个单独的 ref 都是使用toRef()创建的。
+=======
+将一个响应式对象转换为一个普通对象，这个普通对象的每个属性都是指向源对象相应属性的 ref。每个 ref 都是使用toRef()创建的。
+>>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
 
 当从组合式函数中返回响应式对象时，`toRefs` 相当有用。使用它，消费者组件可以解构/展开返回的对象而不会失去响应性
 
@@ -549,6 +553,24 @@ export function useDebouncedRef(value, delay = 200) {
 }
 ```
 
+<<<<<<< HEAD
+=======
+### toRaw
+
+根据一个 Vue 创建的代理返回其原始对象.
+
+`toRaw()` 可以返回由 `reactive()`、`readonly()`、`shallowReactive()` 或者 `shallowReadonly()` 创建的代理对应的原始对象。
+
+这是一个可以用于临时读取而不引起代理访问/跟踪开销，或是写入而不触发更改的特殊方法。不建议保存对原始对象的持久引用，请谨慎使用
+
+```javascript
+const foo = {}
+const reactiveFoo = reactive(foo)
+
+console.log(toRaw(reactiveFoo) === foo) // true
+```
+
+>>>>>>> 2d516c28979b0fd51e29c9cc8437e5416b90c04a
 ### 生命周期
 
 ![组件生命周期图示](https://images-sally.oss-cn-beijing.aliyuncs.com/img/vue3-lifecycle.png)
